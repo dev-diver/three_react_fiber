@@ -1,21 +1,43 @@
+import { OrbitControls } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber"
-import { useRef } from "react"
+import { useRef, useEffect } from "react"
+import * as THREE from "three"
+import { useControls } from "leva"
 
 function MyElement3D() {
 
-    const refMesh = useRef()
-
-    //매 프레임이 렌더링되기 직전의 hook
-    useFrame((state, delta) => { //state:    delta: 이전 프레임과 현재 프레임 사이의 시간(밀리초)
-        refMesh.current.rotation.y += delta
+    const { xSize, ySize, zSize, xSegments, ySegments, zSegments } = useControls({
+        xSize: { value: 1, min: 0.1, max: 5, step: 0.01 },
+        ySize: { value: 1, min: 0.1, max: 5, step: 0.01 },
+        zSize: { value: 1, min: 0.1, max: 5, step: 0.01 },
+        xSegments: { value: 1, min: 1, max: 10, step: 1 },
+        ySegments: { value: 1, min: 1, max: 10, step: 1 },
+        zSegments: { value: 1, min: 1, max: 10, step: 1 },
     })
+
+    const refMesh = useRef()
+    const refWireMesh = useRef()
+
+    useEffect(()=> {
+        refWireMesh.current.geometry = refMesh.current.geometry
+    },[xSize, ySize, zSize, xSegments, ySegments, zSegments])
 
     return (
         <>
-            <directionalLight position ={[1,1,1]}/>
-            <mesh ref={refMesh} rotation-y={45*Math.PI/180}>
-                <boxGeometry/>
-                <meshStandardMaterial color = "#e67e22"/>
+            <OrbitControls />
+
+            <ambientLight intensity={0.1} />
+            <directionalLight position ={[2,1,3]} intensity={0.5}/>
+
+            {/* <axesHelper scale = {10} /> */}
+
+            <mesh ref={refMesh}>
+                <boxGeometry args={[xSize, ySize, zSize, xSegments, ySegments, zSegments]}/>
+                <meshStandardMaterial color = "#1abc9c"/>
+            </mesh>
+
+            <mesh ref={refWireMesh}>
+                <meshStandardMaterial emissive="yellow" wireframe={true} />
             </mesh>
         </>
     )
